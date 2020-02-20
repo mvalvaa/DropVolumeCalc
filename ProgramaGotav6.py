@@ -1,7 +1,7 @@
-from cv2 import *
+import cv2
 import numpy as np
 
-ensaios = 9
+ensaios = 1
 
 img1 = cv2.imread('Background.jpg',0)
 
@@ -19,15 +19,17 @@ dim = cv2.selectROI(img1_resize)
 
 print('Diâmetro:  ', dim[2], 'px')
 var1 = 0.91188/(dim[2]/(scale_percent/100))  #lado de cada px em mm
-print('Dimensão do pixel',var1)
+print('Dimensão do pixel',var1, 'mm')
 
+#Função para aumentar luminusidade/contraste
 def contrast(img):
-    alpha = 1                               #luminusidade
-    beta = -50                              #contraste
+    alpha = 1                           
+    beta = -50                          
     return (cv2.convertScaleAbs(img, alpha=alpha, beta=beta))
 
+#Função para aplicar Gaussian Blur
 def blur(img):
-    img = cv2.GaussianBlur(img,(5,5),0)     #Aplica Gaussian Blur
+    img = cv2.GaussianBlur(img,(5,5),0)
     return (img)
 
 img1 = contrast (img1_Crop)
@@ -49,10 +51,13 @@ for x in range (1,ensaios+1):
     backless = cv2.subtract(img1,img2)      #Subtrai Background
 
     #Threshold
-    ret,threshold = cv2.threshold(backless,127,255,cv2.THRESH_BINARY)
+    ret,threshold = cv2.threshold(backless,40,255,cv2.THRESH_BINARY)
     
+    cv2.imshow('',threshold)
+    cv2.waitKey(0)
+
     #Identifica contornos
-    contours,hierarchy = cv2.findContours(threshold,1,2)
+    contours,hierarchy = cv2.findContours(threshold,1,cv2.CHAIN_APPROX_NONE)
 
     #Procura a maior área
     largest_area = 0
@@ -64,27 +69,35 @@ for x in range (1,ensaios+1):
             
     #Transforma imagem em RGB
     color = cv2.cvtColor(threshold, cv2.COLOR_GRAY2RGB)             
-    contours_draw =cv2.drawContours(color, contours, -1, (0,255,0), 3)
+    contours_draw =cv2.drawContours(color, contours, -1, (0,255,0), 1)
     #Desenha contornos e guarda imagem
-    outfile = 'C:/Users/migue/OneDrive/Desktop/Nova pasta/contorno'+a+'.png'
+    outfile = 'C:/Users/migue/OneDrive/Desktpo/19-02-2020/Contornos/contorno'+a+'.png'
     cv2.imwrite(outfile,contours_draw)
 
+    if not cv2.imwrite(outfile,contours_draw):
+    	print('\n ATTENTION: Image not saved \n')
+     
+
+    #Calcula area da gota
     area = largest_area                 #valor vem em pixeis
     px_area = var1*var1                 #área de um pixel
     px_volume = px_area*var1
-    area_mm = (area*px_area)         #transforma em milimetros
+    area_mm = (area*px_area)            #transforma em milimetros
 
     print('Area ',a,': ',area_mm,' mm^2')
     #Guarda area no vetor das areas
     vector_of_areas.append(area_mm)
 
+    #Calcula volume da gota
     array_points = contours[largest_contour]
     x_coord = []
+    y_coord = []
     for i in range (len(array_points)):
         array_array = array_points[i]
         xy_coord = array_array[0]
         
         x_coord.append(xy_coord[0])
+        y_coord.append(xy_coord[1])
 
     x_mean = np.mean(x_coord)
     volume=0
@@ -95,6 +108,7 @@ for x in range (1,ensaios+1):
             volume = volume + volume_part
     
     print('Volume: ',volume*px_volume, 'mm^3 \n')
+
 
 #Cria ficheiro com valor das áreas
 file = open('Areas.txt','w')
