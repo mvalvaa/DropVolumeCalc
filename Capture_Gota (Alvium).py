@@ -1,3 +1,6 @@
+#Instituto Português da Qaulidade - IPQ
+#NOVA School of Science and Technologies - NOVA FCT
+
 from pymba import Vimba
 from pymba import Frame
 import cv2
@@ -6,6 +9,9 @@ import numpy as np
 import os
 import tkinter as tk
 import tkinter.filedialog
+
+print('Instituto Português da Qualidade - IPQ \nNOVA School of Science and Thecnologies - NOVA FCT')
+print('Capture Gota (Alvium)')
 
 ## user inputs
 user_time_interval = 1
@@ -141,7 +147,7 @@ def main():
     
     while not end == True:
         
-        input_ = int(input('\nChoose task: '))
+        input_ = int(input('\nChoose task: \n\n-Camera Setup -> 1\n-Choose Directory -> 2\n-Camera View -> 3\n-Background Capture -> 4\n-Camera Capture -> 5\n-Close -> 0\n\n Input: '))
         if input_ == 1:
             camera_setup()
             setup = True

@@ -1,3 +1,5 @@
+#Instituto Português da Qaulidade - IPQ
+#NOVA School of Science and Technologies - NOVA FCT
 print("Python code is starting...")
 
 import cv2
@@ -23,22 +25,17 @@ def close_window():
     window.destroy()
 
 def main():
-    global img1_Crop
-    global ROI
+
     ensaios = entry_ensaio.get()
     ensaios = int(ensaios)
 
     img1 = cv2.imread('Background.jpg',0)
 
     #Select ROI of tube
-    img1_resize = cv2.resize(img1, (1006,759))
-    ROI = cv2.selectROI(img1_resize)
-
-    ROI = (ROI[0]*4,ROI[1]*4,ROI[2]*4,ROI[3]*4)
+    ROI = cv2.selectROI(img1)
     img1_Crop = img1[int(ROI[1]):int(ROI[1]+ROI[3]), int(ROI[0]):int(ROI[0]+ROI[2])]
-    cv2.imshow('',img1_Crop)
     cv2.destroyAllWindows()
-    
+
     img1_Crop = cv2.GaussianBlur(img1_Crop,(5,5),0)
     cv2.imwrite(window.directory +'/crop.jpg',img1_Crop)
 
@@ -60,8 +57,8 @@ def main():
     diametro_tubo = dcontours[0][0][0][0] - dcontours[(len(dcontours)-1)][2][0][0]
     print('Diametro = ', diametro_tubo, ' px')
 
-    var_escala = 0.01/diametro_tubo  #lado de cada px em mm
-    print('Dimensão do pixel',var_escala, 'mm \n')
+    var1 = 0.91188/diametro_tubo  #lado de cada px em mm
+    print('Dimensão do pixel',var1, 'mm \n')
 
     #ROI2 = (540, 120, 800, 425)
     #img1 = img1[int(ROI2[1]):int(ROI2[1]+ROI2[3]), int(ROI2[0]):int(ROI2[0]+ROI2[2])]
@@ -122,7 +119,7 @@ def main():
             #Transforma imagem em RGB
             color = cv2.cvtColor(threshold, cv2.COLOR_GRAY2RGB)
             contours_draw =cv2.drawContours(color, contours, -1, (0,255,0), 1)
-            cv2.resize(contours_draw, (1080,720))
+
             cv2.imwrite(window.directory + '/Contornos/Contorno('+a+').png',contours_draw)
             #Desenha contornos e guarda imagem
 
@@ -132,7 +129,7 @@ def main():
 
         #Calcula area da gota
         #area = largest_area                 #valor vem em pixeis
-        px_area = var_escala*var_escala                 #área de um pixel
+        px_area = var1*var1                 #área de um pixel
 
         #area_mm = (area*px_area)            #transforma em milimetros
 
@@ -141,7 +138,7 @@ def main():
         #vector_of_areas.append(area_mm)
 
         #Calcula volume da gota
-        px_volume = px_area*var_escala
+        px_volume = px_area*var1
         array_points = contours[largest_contour]
         x_coord = []
         y_coord = []
@@ -189,18 +186,17 @@ def main():
 
     #Cria ficheiro com valor dos volumes
     file = open('Volumes.txt','w')
-    file.write('Escala (mm/px): ' + str(var_escala) + '\n')
     for y in range (1,ensaios+1):
         volume = str(vector_of_volumes[y-1])
         file.write(volume+'\n')
     file.close()
-    print('Finish')
+
     cv2.destroyAllWindows()
 
 
 #Create Window
 window = tk.Tk()
-window.title("Hanging Droplet")
+window.title("GOTa")
 window.geometry("600x250")
 
 times20 = tkFont.Font(family = "Times",size = 15,weight = "bold")
